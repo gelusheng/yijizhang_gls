@@ -1,0 +1,1687 @@
+/*
+ Navicat Premium Data Transfer
+
+ Source Server         : 127.0.0.1
+ Source Server Type    : MySQL
+ Source Server Version : 80032
+ Source Host           : localhost:3306
+ Source Schema         : yjz_prod
+
+ Target Server Type    : MySQL
+ Target Server Version : 80032
+ File Encoding         : 65001
+
+ Date: 11/07/2024 23:25:14
+*/
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for account_book
+-- ----------------------------
+DROP TABLE IF EXISTS `account_book`;
+CREATE TABLE `account_book`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `book_name` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT '账套名称',
+  `money_code` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '记账本位币代码',
+  `money_name` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '记账本位币名称',
+  `start_time` date NULL DEFAULT NULL COMMENT '账套启用日期',
+  `init_year` int NULL DEFAULT NULL COMMENT '启用年',
+  `init_period` int NULL DEFAULT NULL COMMENT '账套启用会计期间',
+  `company_name` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '公司名称',
+  `company_id` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '公司id',
+  `dict_value_id` int NULL DEFAULT NULL COMMENT '字典数据表id',
+  `over_flag` int NULL DEFAULT NULL COMMENT '是否结束此次账套标示\n1  为结束    \n0  未结束',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00' COMMENT '修改时间',
+  `last_year_id` bigint NULL DEFAULT NULL COMMENT '上一年账套id',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '账套表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of account_book
+-- ----------------------------
+INSERT INTO `account_book` VALUES (1, '演示账套', 'RMB', '人民币', '2015-10-01', 2015, 10, '安徽新华社', NULL, 1, 0, '2015-10-22 15:54:56', '2015-01-01 00:00:00', 1);
+
+-- ----------------------------
+-- Table structure for account_subject
+-- ----------------------------
+DROP TABLE IF EXISTS `account_subject`;
+CREATE TABLE `account_subject`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `subject_code` bigint NOT NULL COMMENT '会计科目编码  \n暂定总分类：-1       小分类：0',
+  `subject_name` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT '会计科目名称\n总分类与小分类填对应名称',
+  `parent_subject_code` bigint NOT NULL COMMENT '父会计科目id',
+  `level` int NOT NULL COMMENT '暂定总分类：-1   小分类：0\n会计科目一：1    会计科目二：2',
+  `tip_info` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT ' 助记码',
+  `direction` int NULL DEFAULT NULL COMMENT '借方向 ：1     贷方向：2',
+  `book_id` bigint NULL DEFAULT NULL COMMENT '账套id',
+  `total_debit` decimal(11, 2) NULL DEFAULT NULL COMMENT '累计借方金额',
+  `total_credit` decimal(11, 2) NULL DEFAULT NULL COMMENT '累计贷方金额 ',
+  `initial_left` decimal(11, 2) NULL DEFAULT NULL COMMENT '期初余额',
+  `year_occur_amount` decimal(11, 2) NULL DEFAULT NULL COMMENT '本年累计损益实际发生额',
+  `end_flag` int NULL DEFAULT 0 COMMENT '是否结束此次账套标示/期结账\n1  结束   0  未结束',
+  `base_flag` int NULL DEFAULT 0 COMMENT '0：基础数据     1：非基础数据    ',
+  `company_id` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '公司id',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00' COMMENT '修改时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE,
+  INDEX `fk_account_subject_account_book1_idx`(`book_id` ASC) USING BTREE,
+  CONSTRAINT `fk_account_subject_account_book1` FOREIGN KEY (`book_id`) REFERENCES `account_book` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '会计科目表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of account_subject
+-- ----------------------------
+INSERT INTO `account_subject` VALUES (1, -1, '资产', -9999, -1, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (2, -2, '负债', -9999, -1, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (3, -3, '共同', -9999, -1, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (4, -4, '权益', -9999, -1, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (5, -5, '成本', -9999, -1, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (6, -6, '损益', -9999, -1, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (7, -7, '现金', -1, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (8, -8, '银行存款', -1, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (9, -9, '流动资产', -1, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (10, -10, '坏账准备', -1, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (11, -11, '存货', -1, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (12, -12, '非流动资产', -1, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (13, -13, '固定资产', -1, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (14, -14, '累计折旧', -1, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (15, -15, '流动负债', -2, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (16, -16, '非流动负债', -2, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (17, -17, '共同', -3, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (18, -18, '资本', -4, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (19, -19, '累计盈余', -4, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (20, -20, '生产成本', -5, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (21, -21, '收入', -6, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (22, -22, '其他收入', -6, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (23, -23, '销售成本', -6, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (24, -24, '其他费用', -6, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (25, -25, '费用', -6, 0, NULL, NULL, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (26, 1001, '库存现金', -7, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (27, 1002, '银行存款', -8, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (28, 1012, '其他货币资金', -9, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (29, 101201, '外埠存款', 1012, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (30, 101202, '银行本票存款', 1012, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (31, 101203, '银行汇票存款', 1012, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (32, 101204, '信用卡存款', 1012, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (33, 101205, '信用保证金存款', 1012, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (34, 101206, '存出投资款', 1012, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (35, 1101, '交易性金融资产', -9, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (36, 110101, '本金', 1101, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (37, 11010101, '股票', 110101, 3, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (38, 11010102, '债券', 110101, 3, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (39, 11010103, '基金', 110101, 3, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (40, 11010104, '权证', 110101, 3, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (41, 11010199, '其他', 110101, 3, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (42, 110102, '公允价值变动', 1101, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (43, 11010201, '股票', 110102, 3, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (44, 11010202, '债券', 110102, 3, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (45, 11010203, '基金', 110102, 3, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (46, 11010204, '权证', 110102, 3, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (47, 11010299, '其他', 110102, 3, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (48, 1121, '应收票据', -9, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (49, 1122, '应收账款', -9, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (50, 1123, '预付账款', -9, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (51, 1131, '应收股利', -9, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (52, 1132, '应收利息', -9, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (53, 1221, '其他应收款', -9, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (54, 1231, '坏账准备', -10, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (55, 123101, '应收账款坏账准备', 1231, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (56, 123102, '其他应收账款坏账准备', 1231, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (57, 1321, '受托代销商品', -11, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (58, 1401, '材料采购', -11, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (59, 1402, '在途物资', -11, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (60, 1403, '原材料', -11, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (61, 1404, '材料成本差异', -11, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (62, 1405, '库存商品', -11, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (63, 1406, '发出商品', -11, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (64, 1407, '商品进销差价', -11, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (65, 1408, '委托加工物资', -11, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (66, 1411, '周转材料', -11, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (67, 1471, '存货跌价准备', -11, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (68, 1501, '持有至到期投资', -12, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (69, 150101, '投资成本', 1501, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (70, 150102, '溢折价', 1501, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (71, 150103, '应计利息', 1501, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (72, 1502, '持有至到期投资减值准备', -12, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (73, 1503, '可供出售金融资产', -12, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (74, 1511, '长期股权投资', -12, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (75, 151101, '投资成本', 1511, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (76, 151102, '损益调整', 1511, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (77, 151103, '所有者权益其他变动', 1511, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (78, 1512, '长期股权投资减值准备', -12, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (79, 1521, '投资性房地产', -12, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (80, 152101, '成本', 1521, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (81, 152102, '公允价值变动', 1521, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (82, 1531, '长期应收款', -12, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (83, 1532, '未实现融资收益', -12, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (84, 1601, '固定资产', -13, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (85, 1602, '累计折旧', -14, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (86, 1603, '固定资产减值准备', -13, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (87, 1604, '在建工程', -13, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (88, 160401, '建筑工程', 1604, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (89, 160402, '安装工程', 1604, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (90, 160403, '在安装设备', 1604, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (91, 160404, '待摊支出', 1604, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (92, 1605, '工程物资', -13, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (93, 160501, '专用材料', 1605, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (94, 160502, '专用设备', 1605, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (95, 160503, '预付大型设备款', 1605, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (96, 160504, '为生产准备的工具及器具', 1605, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (97, 1606, '固定资产清理', -13, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (98, 1701, '无形资产', -12, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (99, 1702, '累计摊销', -12, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (100, 1703, '无形资产减值准备', -12, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (101, 1711, '商誉', -12, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (102, 1801, '长期待摊费用', -12, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (103, 1811, '递延所得税资产', -12, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (104, 1901, '待处理财产损益', -12, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (105, 2001, '短期借款', -15, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (106, 2101, '交易性金融负债', -15, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (107, 210101, '本金', 2101, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (108, 210102, '公允价值变动', 2101, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (109, 2201, '应付票据', -15, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (110, 2202, '应付账款', -15, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (111, 2203, '预收账款', -15, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (112, 2211, '应付职工薪酬', -15, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (113, 221101, '工资', 2211, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (114, 221102, '职工福利', 2211, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (115, 221103, '社会保险费', 2211, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (116, 221104, '住房公积金', 2211, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (117, 221105, '工会经费', 2211, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (118, 221106, '职工教育经费', 2211, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (119, 221107, '解除职工劳动关系补偿', 2211, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (120, 2221, '应交税费', -15, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (121, 222101, '应交增值税', 2221, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (122, 22210101, '进项税额', 222101, 3, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (123, 22210102, '已交税金', 222101, 3, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (124, 22210103, '减免税款', 222101, 3, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (125, 22210104, '出口抵减内销产品应纳税额', 222101, 3, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (126, 22210105, '转出未交增值税', 222101, 3, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (127, 22210106, '销项税额', 222101, 3, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (128, 22210107, '出口退税', 222101, 3, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (129, 22210108, '进项税额转出', 222101, 3, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (130, 22210109, '转出多交增值税', 222101, 3, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (131, 222102, '未交增值税', 2221, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (132, 222103, '应交营业税', 2221, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (133, 222104, '应交消费税', 2221, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (134, 222105, '应交资源税', 2221, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (135, 222106, '应交所得税', 2221, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (136, 222107, '应交土地增值税', 2221, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (137, 222108, '应交城市建设维护税', 2221, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (138, 222109, '应交教育附加费', 2221, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (139, 222110, '应交房产税', 2221, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (140, 222111, '应交土地使用税', 2221, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (141, 222112, '应交车船使用税', 2221, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (142, 222113, '应交个人所得税', 2221, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (143, 222114, '应交矿产资源补偿费', 2221, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (144, 2231, '应付股利', -15, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (145, 2232, '应付利息', -15, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (146, 2241, '其他应付款', -15, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (147, 2314, '受托代销商品款', -15, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (148, 2401, '递延收益', -15, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (149, 2501, '长期借款', -16, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (150, 250101, '本金', 2501, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (151, 250102, '利息调整', 2501, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (152, 2502, '应付债券', -16, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (153, 250201, '债券面值', 2502, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (154, 250202, '利息调整', 2502, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (155, 250203, '应计利息', 2502, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (156, 2701, '长期应付款', -16, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (157, 2702, '未确认融资费用', -16, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (158, 2711, '专项应付款', -16, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (159, 2801, '预计负债', -15, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (160, 2901, '递延所得税负债', -16, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (161, 3101, '衍生工具', -17, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (162, 3201, '套期工具', -17, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (163, 3202, '被套期项目', -17, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (164, 4001, '实收资本', -18, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (165, 4002, '资本公积', -18, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (166, 400201, '资本溢价', 4002, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (167, 400202, '股本溢价', 4002, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (168, 400203, '其他资本公积', 4002, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (169, 4101, '盈余公积', -18, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (170, 410101, '法定盈余公积', 4101, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (171, 410102, '任意盈余公积', 4101, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (172, 410103, '法定公益金', 4101, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (173, 410104, '储备基金', 4101, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (174, 410105, '企业发展基金', 4101, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (175, 410106, '利润归还投资', 4101, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (176, 4103, '本年利润', -19, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (177, 4104, '利润分配', -19, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (178, 410401, '提取法定盈余公积金', 4104, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (179, 410402, '提取任意盈余公积', 4104, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (180, 410403, '提取法定公益金', 4104, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (181, 410404, '应付现金股利或利润', 4104, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (182, 410405, '转作股本的利润', 4104, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (183, 410406, '盈余公积补亏', 4104, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (184, 410407, '提取储备基金', 4104, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (185, 410408, '提取企业发展基金', 4104, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (186, 410409, '提取职工奖励及福利基金', 4104, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (187, 410410, '利润归还投资', 4104, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (188, 410411, '未分配利润', 4104, 2, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (189, 4201, '库存股', -19, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (190, 5001, '生产成本', -20, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (191, 500101, '基本生产成本', 5001, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (192, 500102, '辅助生产成本', 5001, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (193, 5101, '制造费用', -20, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (194, 5201, '劳务成本', -20, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (195, 5301, '研发支出', -20, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (196, 530101, '费用化支出', 5301, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (197, 530102, '资本化支出', 5301, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (198, 6001, '主营业务收入', -21, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (199, 6051, '其他业务收入', -22, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (200, 6101, '公允价值变动损益', -22, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (201, 6111, '投资收益', -22, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (202, 6301, '营业外收入', -22, 1, NULL, 2, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (203, 6401, '主营业务成本', -23, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (204, 6402, '其他业务成本', -24, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (205, 6403, '营业税金及附加', -24, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (206, 6601, '销售费用', -25, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (207, 660101, '办公用品', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (208, 660102, '房租', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (209, 660103, '物业管理费', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (210, 660104, '水电费', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (211, 660105, '交际应酬费', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (212, 660106, '市内交通费', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (213, 660107, '差旅费', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (214, 660108, '补助', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (215, 660109, '通讯费', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (216, 660110, '工资', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (217, 660111, '佣金', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (218, 660112, '保险金', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (219, 660113, '福利费', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (220, 660114, '包装费', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (221, 660115, '展览费费和广告费', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (222, 660116, '商品维修费', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (223, 660117, '预计产品质量保证损失', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (224, 660118, '运输费', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (225, 660119, '装卸费', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (226, 660120, '折旧费', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (227, 660121, '计提福利', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (228, 660122, '计提职工教育经费', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (229, 660199, '其他', 6601, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (230, 6602, '管理费用', -25, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (231, 660201, '办公用品', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (232, 660202, '房租', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (233, 660203, '物业管理费', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (234, 660204, '水电费', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (235, 660205, '交际应酬费', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (236, 660206, '市内交通费', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (237, 660207, '差旅费', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (238, 660208, '通讯费', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (239, 660209, '工资', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (240, 660210, '保险金', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (241, 660211, '福利费', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (242, 660212, '工会经费', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (243, 660213, '董事会费', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (244, 660214, '聘请中介机构费', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (245, 660215, '咨询费', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (246, 660216, '诉讼费', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (247, 660217, '房产税', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (248, 660218, '车船使用税', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (249, 660219, '土地使用税', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (250, 660220, '印花税', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (251, 660221, '技术转让费', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (252, 660222, '矿产资源补偿费', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (253, 660223, '研究费用', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (254, 660224, '排污费', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (255, 660225, '折旧费', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (256, 660226, '计提福利', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (257, 660227, '计提职工教育经费', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (258, 660228, '存货盘亏或盘盈', 6602, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (259, 6603, '财务费用', -25, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (260, 660301, '汇兑损益', 6603, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (261, 660302, '利息', 6603, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (262, 660303, '手续费', 6603, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (263, 660399, '其他', 6603, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (264, 6701, '资产减值损失', -24, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (265, 6711, '营业外支出', -24, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (266, 6801, '所得税费用', -24, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (267, 680101, '当期所得税费用', 6801, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (268, 680102, '递延所得税费用', 6801, 2, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `account_subject` VALUES (269, 6901, '以前年度损益调整', -24, 1, NULL, 1, 1, NULL, NULL, NULL, NULL, 1, 0, NULL, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+
+-- ----------------------------
+-- Table structure for account_subject_template
+-- ----------------------------
+DROP TABLE IF EXISTS `account_subject_template`;
+CREATE TABLE `account_subject_template`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `subject_code` bigint NOT NULL COMMENT '会计科目编码  \n暂定总分类：-1       小分类：0',
+  `subject_name` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT '会计科目名称\n总分类与小分类填对应名称',
+  `parent_subject_code` bigint NOT NULL COMMENT '父会计科目id',
+  `level` int NOT NULL COMMENT '暂定总分类：-1   小分类：0\n会计科目一：1    会计科目二：2',
+  `balance_direction` int NULL DEFAULT NULL COMMENT '借方向 ：1     贷方向：2',
+  `dict_value_id` int NULL DEFAULT NULL COMMENT '字段数据id，表示科目体系id',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00' COMMENT '修改时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '会计科目模板表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of account_subject_template
+-- ----------------------------
+INSERT INTO `account_subject_template` VALUES (1, -1, '资产', -9999, -1, NULL, 1, '2015-09-28 11:14:00', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (2, -2, '负债', -9999, -1, NULL, 1, '2015-09-28 11:14:00', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (3, -3, '共同', -9999, -1, NULL, 1, '2015-09-28 11:14:00', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (4, -4, '权益', -9999, -1, NULL, 1, '2015-09-28 11:14:00', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (5, -5, '成本', -9999, -1, NULL, 1, '2015-09-28 11:14:00', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (6, -6, '损益', -9999, -1, NULL, 1, '2015-09-28 11:14:00', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (313, -7, '现金', -1, 0, NULL, 1, '2015-09-28 11:14:33', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (314, -8, '银行存款', -1, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:15:13');
+INSERT INTO `account_subject_template` VALUES (315, -9, '流动资产', -1, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:15:17');
+INSERT INTO `account_subject_template` VALUES (316, -10, '坏账准备', -1, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:15:22');
+INSERT INTO `account_subject_template` VALUES (317, -11, '存货', -1, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:15:26');
+INSERT INTO `account_subject_template` VALUES (318, -12, '非流动资产', -1, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:16:15');
+INSERT INTO `account_subject_template` VALUES (319, -13, '固定资产', -1, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:16:18');
+INSERT INTO `account_subject_template` VALUES (320, -14, '累计折旧', -1, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:16:21');
+INSERT INTO `account_subject_template` VALUES (321, -15, '流动负债', -2, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:16:24');
+INSERT INTO `account_subject_template` VALUES (322, -16, '非流动负债', -2, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:16:28');
+INSERT INTO `account_subject_template` VALUES (323, -17, '共同', -3, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:16:31');
+INSERT INTO `account_subject_template` VALUES (324, -18, '资本', -4, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:16:35');
+INSERT INTO `account_subject_template` VALUES (325, -19, '累计盈余', -4, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:16:38');
+INSERT INTO `account_subject_template` VALUES (326, -20, '生产成本', -5, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:16:42');
+INSERT INTO `account_subject_template` VALUES (327, -21, '收入', -6, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:16:45');
+INSERT INTO `account_subject_template` VALUES (328, -22, '其他收入', -6, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:16:48');
+INSERT INTO `account_subject_template` VALUES (329, -23, '销售成本', -6, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:16:51');
+INSERT INTO `account_subject_template` VALUES (330, -24, '其他费用', -6, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:16:54');
+INSERT INTO `account_subject_template` VALUES (331, -25, '费用', -6, 0, NULL, 1, '2015-09-28 11:14:33', '2015-09-28 11:16:59');
+INSERT INTO `account_subject_template` VALUES (599, 1001, '库存现金', -7, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (600, 1002, '银行存款', -8, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (601, 1012, '其他货币资金', -9, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (602, 101201, '外埠存款', 1012, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (603, 101202, '银行本票存款', 1012, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (604, 101203, '银行汇票存款', 1012, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (605, 101204, '信用卡存款', 1012, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (606, 101205, '信用保证金存款', 1012, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (607, 101206, '存出投资款', 1012, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (608, 1101, '交易性金融资产', -9, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (609, 110101, '本金', 1101, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (610, 11010101, '股票', 110101, 3, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (611, 11010102, '债券', 110101, 3, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (612, 11010103, '基金', 110101, 3, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (613, 11010104, '权证', 110101, 3, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (614, 11010199, '其他', 110101, 3, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (615, 110102, '公允价值变动', 1101, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (616, 11010201, '股票', 110102, 3, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (617, 11010202, '债券', 110102, 3, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (618, 11010203, '基金', 110102, 3, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (619, 11010204, '权证', 110102, 3, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (620, 11010299, '其他', 110102, 3, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (621, 1121, '应收票据', -9, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (622, 1122, '应收账款', -9, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (623, 1123, '预付账款', -9, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (624, 1131, '应收股利', -9, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (625, 1132, '应收利息', -9, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (626, 1221, '其他应收款', -9, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (627, 1231, '坏账准备', -10, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (628, 123101, '应收账款坏账准备', 1231, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (629, 123102, '其他应收账款坏账准备', 1231, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (630, 1321, '受托代销商品', -11, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (631, 1401, '材料采购', -11, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (632, 1402, '在途物资', -11, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (633, 1403, '原材料', -11, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (634, 1404, '材料成本差异', -11, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (635, 1405, '库存商品', -11, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (636, 1406, '发出商品', -11, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (637, 1407, '商品进销差价', -11, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (638, 1408, '委托加工物资', -11, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (639, 1411, '周转材料', -11, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (640, 1471, '存货跌价准备', -11, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (641, 1501, '持有至到期投资', -12, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (642, 150101, '投资成本', 1501, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (643, 150102, '溢折价', 1501, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (644, 150103, '应计利息', 1501, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (645, 1502, '持有至到期投资减值准备', -12, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (646, 1503, '可供出售金融资产', -12, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (647, 1511, '长期股权投资', -12, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (648, 151101, '投资成本', 1511, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (649, 151102, '损益调整', 1511, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (650, 151103, '所有者权益其他变动', 1511, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (651, 1512, '长期股权投资减值准备', -12, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (652, 1521, '投资性房地产', -12, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (653, 152101, '成本', 1521, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (654, 152102, '公允价值变动', 1521, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (655, 1531, '长期应收款', -12, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (656, 1532, '未实现融资收益', -12, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (657, 1601, '固定资产', -13, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (658, 1602, '累计折旧', -14, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (659, 1603, '固定资产减值准备', -13, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (660, 1604, '在建工程', -13, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (661, 160401, '建筑工程', 1604, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (662, 160402, '安装工程', 1604, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (663, 160403, '在安装设备', 1604, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (664, 160404, '待摊支出', 1604, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (665, 1605, '工程物资', -13, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (666, 160501, '专用材料', 1605, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (667, 160502, '专用设备', 1605, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (668, 160503, '预付大型设备款', 1605, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (669, 160504, '为生产准备的工具及器具', 1605, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (670, 1606, '固定资产清理', -13, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (671, 1701, '无形资产', -12, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (672, 1702, '累计摊销', -12, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (673, 1703, '无形资产减值准备', -12, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (674, 1711, '商誉', -12, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (675, 1801, '长期待摊费用', -12, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (676, 1811, '递延所得税资产', -12, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (677, 1901, '待处理财产损益', -12, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (678, 2001, '短期借款', -15, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (679, 2101, '交易性金融负债', -15, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (680, 210101, '本金', 2101, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (681, 210102, '公允价值变动', 2101, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (682, 2201, '应付票据', -15, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (683, 2202, '应付账款', -15, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (684, 2203, '预收账款', -15, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (685, 2211, '应付职工薪酬', -15, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (686, 221101, '工资', 2211, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (687, 221102, '职工福利', 2211, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (688, 221103, '社会保险费', 2211, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (689, 221104, '住房公积金', 2211, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (690, 221105, '工会经费', 2211, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (691, 221106, '职工教育经费', 2211, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (692, 221107, '解除职工劳动关系补偿', 2211, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (693, 2221, '应交税费', -15, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (694, 222101, '应交增值税', 2221, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (695, 22210101, '进项税额', 222101, 3, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (696, 22210102, '已交税金', 222101, 3, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (697, 22210103, '减免税款', 222101, 3, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (698, 22210104, '出口抵减内销产品应纳税额', 222101, 3, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (699, 22210105, '转出未交增值税', 222101, 3, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (700, 22210106, '销项税额', 222101, 3, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (701, 22210107, '出口退税', 222101, 3, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (702, 22210108, '进项税额转出', 222101, 3, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (703, 22210109, '转出多交增值税', 222101, 3, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (704, 222102, '未交增值税', 2221, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (705, 222103, '应交营业税', 2221, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (706, 222104, '应交消费税', 2221, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (707, 222105, '应交资源税', 2221, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (708, 222106, '应交所得税', 2221, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (709, 222107, '应交土地增值税', 2221, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (710, 222108, '应交城市建设维护税', 2221, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (711, 222109, '应交教育附加费', 2221, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (712, 222110, '应交房产税', 2221, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (713, 222111, '应交土地使用税', 2221, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (714, 222112, '应交车船使用税', 2221, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (715, 222113, '应交个人所得税', 2221, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (716, 222114, '应交矿产资源补偿费', 2221, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (717, 2231, '应付股利', -15, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (718, 2232, '应付利息', -15, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (719, 2241, '其他应付款', -15, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (720, 2314, '受托代销商品款', -15, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (721, 2401, '递延收益', -15, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (722, 2501, '长期借款', -16, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (723, 250101, '本金', 2501, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (724, 250102, '利息调整', 2501, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (725, 2502, '应付债券', -16, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (726, 250201, '债券面值', 2502, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (727, 250202, '利息调整', 2502, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (728, 250203, '应计利息', 2502, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (729, 2701, '长期应付款', -16, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (730, 2702, '未确认融资费用', -16, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (731, 2711, '专项应付款', -16, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (732, 2801, '预计负债', -15, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (733, 2901, '递延所得税负债', -16, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (734, 3101, '衍生工具', -17, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (735, 3201, '套期工具', -17, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (736, 3202, '被套期项目', -17, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (737, 4001, '实收资本', -18, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (738, 4002, '资本公积', -18, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (739, 400201, '资本溢价', 4002, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (740, 400202, '股本溢价', 4002, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (741, 400203, '其他资本公积', 4002, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (742, 4101, '盈余公积', -18, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (743, 410101, '法定盈余公积', 4101, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (744, 410102, '任意盈余公积', 4101, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (745, 410103, '法定公益金', 4101, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (746, 410104, '储备基金', 4101, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (747, 410105, '企业发展基金', 4101, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (748, 410106, '利润归还投资', 4101, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (749, 4103, '本年利润', -19, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (750, 4104, '利润分配', -19, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (751, 410401, '提取法定盈余公积金', 4104, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (752, 410402, '提取任意盈余公积', 4104, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (753, 410403, '提取法定公益金', 4104, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (754, 410404, '应付现金股利或利润', 4104, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (755, 410405, '转作股本的利润', 4104, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (756, 410406, '盈余公积补亏', 4104, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (757, 410407, '提取储备基金', 4104, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (758, 410408, '提取企业发展基金', 4104, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (759, 410409, '提取职工奖励及福利基金', 4104, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (760, 410410, '利润归还投资', 4104, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (761, 410411, '未分配利润', 4104, 2, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (762, 4201, '库存股', -19, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (763, 5001, '生产成本', -20, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (764, 500101, '基本生产成本', 5001, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (765, 500102, '辅助生产成本', 5001, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (766, 5101, '制造费用', -20, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (767, 5201, '劳务成本', -20, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (768, 5301, '研发支出', -20, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (769, 530101, '费用化支出', 5301, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (770, 530102, '资本化支出', 5301, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (771, 6001, '主营业务收入', -21, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (772, 6051, '其他业务收入', -22, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (773, 6101, '公允价值变动损益', -22, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (774, 6111, '投资收益', -22, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (775, 6301, '营业外收入', -22, 1, 2, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (776, 6401, '主营业务成本', -23, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (777, 6402, '其他业务成本', -24, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (778, 6403, '营业税金及附加', -24, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (779, 6601, '销售费用', -25, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (780, 660101, '办公用品', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (781, 660102, '房租', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (782, 660103, '物业管理费', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (783, 660104, '水电费', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (784, 660105, '交际应酬费', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (785, 660106, '市内交通费', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (786, 660107, '差旅费', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (787, 660108, '补助', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (788, 660109, '通讯费', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (789, 660110, '工资', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (790, 660111, '佣金', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (791, 660112, '保险金', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (792, 660113, '福利费', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (793, 660114, '包装费', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (794, 660115, '展览费费和广告费', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (795, 660116, '商品维修费', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (796, 660117, '预计产品质量保证损失', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (797, 660118, '运输费', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (798, 660119, '装卸费', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (799, 660120, '折旧费', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (800, 660121, '计提福利', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (801, 660122, '计提职工教育经费', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (802, 660199, '其他', 6601, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (803, 6602, '管理费用', -25, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (804, 660201, '办公用品', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (805, 660202, '房租', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (806, 660203, '物业管理费', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (807, 660204, '水电费', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (808, 660205, '交际应酬费', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (809, 660206, '市内交通费', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (810, 660207, '差旅费', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (811, 660208, '通讯费', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (812, 660209, '工资', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (813, 660210, '保险金', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (814, 660211, '福利费', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (815, 660212, '工会经费', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (816, 660213, '董事会费', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (817, 660214, '聘请中介机构费', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (818, 660215, '咨询费', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (819, 660216, '诉讼费', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (820, 660217, '房产税', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (821, 660218, '车船使用税', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (822, 660219, '土地使用税', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (823, 660220, '印花税', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (824, 660221, '技术转让费', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (825, 660222, '矿产资源补偿费', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (826, 660223, '研究费用', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (827, 660224, '排污费', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (828, 660225, '折旧费', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (829, 660226, '计提福利', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (830, 660227, '计提职工教育经费', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (831, 660228, '存货盘亏或盘盈', 6602, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (832, 6603, '财务费用', -25, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (833, 660301, '汇兑损益', 6603, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (834, 660302, '利息', 6603, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (835, 660303, '手续费', 6603, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (836, 660399, '其他', 6603, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (837, 6701, '资产减值损失', -24, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (838, 6711, '营业外支出', -24, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (839, 6801, '所得税费用', -24, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (840, 680101, '当期所得税费用', 6801, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (841, 680102, '递延所得税费用', 6801, 2, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+INSERT INTO `account_subject_template` VALUES (842, 6901, '以前年度损益调整', -24, 1, 1, 1, '2015-09-28 11:21:24', '2015-01-01 00:00:00');
+
+-- ----------------------------
+-- Table structure for action_log
+-- ----------------------------
+DROP TABLE IF EXISTS `action_log`;
+CREATE TABLE `action_log`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `action` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '操作名称',
+  `states` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '状态',
+  `description` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '描述',
+  `operator` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '操作人',
+  `address` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT ' 客户端IP',
+  `os` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '操作系统',
+  `pc_name` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '计算机名',
+  `action_time` timestamp NULL DEFAULT NULL COMMENT '操作时间',
+  `method_name` varchar(512) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '方法名',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of action_log
+-- ----------------------------
+INSERT INTO `action_log` VALUES (1, '打开首页', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:04:26', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (2, '打开首页', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:04:26', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (3, '打开首页', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:04:28', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (4, '打开首页', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:04:28', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (5, '打开记账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:04:32', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (6, '打开记账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:04:32', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (7, '打开首页', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:05:59', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (8, '打开首页', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:05:59', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (9, '打开首页', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:06:18', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (10, '打开首页', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:06:18', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (11, '打开首页', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:06:19', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (12, '打开首页', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:06:19', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (13, '打开会计科目管理页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:06:28', 'cn.ahyc.yjz.controller.AccountSubjectController.main');
+INSERT INTO `action_log` VALUES (14, '打开会计科目管理页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:06:28', 'cn.ahyc.yjz.controller.AccountSubjectController.main');
+INSERT INTO `action_log` VALUES (15, '打开明细账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:06:52', 'cn.ahyc.yjz.controller.SearchDetailController.main');
+INSERT INTO `action_log` VALUES (16, '打开明细账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:06:52', 'cn.ahyc.yjz.controller.SearchDetailController.main');
+INSERT INTO `action_log` VALUES (17, '查看明细账数据', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:06:52', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (18, '查看明细账数据', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:06:52', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (19, '打开初始化数据页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:07:04', 'cn.ahyc.yjz.controller.AccountSubjectController.initDataPage');
+INSERT INTO `action_log` VALUES (20, '打开初始化数据页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:07:04', 'cn.ahyc.yjz.controller.AccountSubjectController.initDataPage');
+INSERT INTO `action_log` VALUES (21, '打开结账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:08:48', 'cn.ahyc.yjz.controller.CashierController.main');
+INSERT INTO `action_log` VALUES (22, '打开结账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:08:48', 'cn.ahyc.yjz.controller.CashierController.main');
+INSERT INTO `action_log` VALUES (23, '打开结转损益页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:08:51', 'cn.ahyc.yjz.controller.CarryOverController.main');
+INSERT INTO `action_log` VALUES (24, '打开结转损益页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:08:51', 'cn.ahyc.yjz.controller.CarryOverController.main');
+INSERT INTO `action_log` VALUES (25, '结转损益', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:08:55', 'cn.ahyc.yjz.controller.CarryOverController.complete');
+INSERT INTO `action_log` VALUES (26, '结转损益', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:08:55', 'cn.ahyc.yjz.controller.CarryOverController.complete');
+INSERT INTO `action_log` VALUES (27, '打开资产负债表页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:09:06', 'cn.ahyc.yjz.controller.BalanceSheetController.main');
+INSERT INTO `action_log` VALUES (28, '打开资产负债表页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:09:06', 'cn.ahyc.yjz.controller.BalanceSheetController.main');
+INSERT INTO `action_log` VALUES (29, '打开记账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:09:22', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (30, '打开记账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:09:22', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (31, '查看凭证明细列表', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:09:22', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (32, '查看凭证明细列表', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:09:22', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (33, '打开记账-科目余额页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:10:16', 'cn.ahyc.yjz.controller.VoucherController.subjectBalance');
+INSERT INTO `action_log` VALUES (34, '打开记账-科目余额页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:10:16', 'cn.ahyc.yjz.controller.VoucherController.subjectBalance');
+INSERT INTO `action_log` VALUES (35, '查看科目余额表', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:10:16', 'cn.ahyc.yjz.controller.SubjectBalanceController.subjectBalanceList');
+INSERT INTO `action_log` VALUES (36, '查看科目余额表', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:10:16', 'cn.ahyc.yjz.controller.SubjectBalanceController.subjectBalanceList');
+INSERT INTO `action_log` VALUES (37, '查看凭证制作说明', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:10:19', 'cn.ahyc.yjz.controller.VoucherController.help');
+INSERT INTO `action_log` VALUES (38, '查看凭证制作说明', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:10:19', 'cn.ahyc.yjz.controller.VoucherController.help');
+INSERT INTO `action_log` VALUES (39, '打开明细账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:10:22', 'cn.ahyc.yjz.controller.SearchDetailController.main');
+INSERT INTO `action_log` VALUES (40, '打开明细账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:10:22', 'cn.ahyc.yjz.controller.SearchDetailController.main');
+INSERT INTO `action_log` VALUES (41, '查看明细账数据', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:10:22', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (42, '查看明细账数据', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:10:22', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (43, '打开记账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:10:44', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (44, '打开记账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:10:44', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (45, '查看凭证明细列表', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:10:44', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (46, '查看凭证明细列表', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:10:44', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (47, '打开模式凭证列表页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:10:53', 'cn.ahyc.yjz.controller.VoucherController.voucherTemplate');
+INSERT INTO `action_log` VALUES (48, '打开模式凭证列表页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:10:53', 'cn.ahyc.yjz.controller.VoucherController.voucherTemplate');
+INSERT INTO `action_log` VALUES (49, '打开记账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:16', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (50, '打开记账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:16', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (51, '查看凭证明细列表', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:16', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (52, '查看凭证明细列表', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:16', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (53, '打开模式凭证列表页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:20', 'cn.ahyc.yjz.controller.VoucherController.voucherTemplate');
+INSERT INTO `action_log` VALUES (54, '打开模式凭证列表页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:20', 'cn.ahyc.yjz.controller.VoucherController.voucherTemplate');
+INSERT INTO `action_log` VALUES (55, '打开记账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:27', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (56, '打开记账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:27', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (57, '查看凭证明细列表', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:27', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (58, '查看凭证明细列表', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:27', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (59, '打开记账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:28', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (60, '打开记账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:28', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (61, '查看凭证明细列表', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:28', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (62, '查看凭证明细列表', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:28', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (63, '打开明细账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:40', 'cn.ahyc.yjz.controller.SearchDetailController.main');
+INSERT INTO `action_log` VALUES (64, '打开明细账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:40', 'cn.ahyc.yjz.controller.SearchDetailController.main');
+INSERT INTO `action_log` VALUES (65, '查看明细账数据', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:53', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (66, '查看明细账数据', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:53', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (67, '查看明细账数据', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:55', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (68, '查看明细账数据', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:55', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (69, '查看明细账数据', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:56', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (70, '查看明细账数据', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:11:56', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (71, '查看科目余额表', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:12:02', 'cn.ahyc.yjz.controller.SubjectBalanceController.subjectBalanceList');
+INSERT INTO `action_log` VALUES (72, '查看科目余额表', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:12:02', 'cn.ahyc.yjz.controller.SubjectBalanceController.subjectBalanceList');
+INSERT INTO `action_log` VALUES (73, '打开凭证汇总表页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:12:06', 'cn.ahyc.yjz.controller.SearchVoucherCollectController.main');
+INSERT INTO `action_log` VALUES (74, '打开凭证汇总表页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:12:06', 'cn.ahyc.yjz.controller.SearchVoucherCollectController.main');
+INSERT INTO `action_log` VALUES (75, '查看凭证汇总表数据', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:12:06', 'cn.ahyc.yjz.controller.SearchVoucherCollectController.vouchercollectList');
+INSERT INTO `action_log` VALUES (76, '查看凭证汇总表数据', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:12:06', 'cn.ahyc.yjz.controller.SearchVoucherCollectController.vouchercollectList');
+INSERT INTO `action_log` VALUES (77, '打开试算平衡表页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:12:09', 'cn.ahyc.yjz.controller.SearchTrialBalanceController.main');
+INSERT INTO `action_log` VALUES (78, '打开试算平衡表页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:12:09', 'cn.ahyc.yjz.controller.SearchTrialBalanceController.main');
+INSERT INTO `action_log` VALUES (79, '查看试算平衡表数据', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:12:09', 'cn.ahyc.yjz.controller.SearchTrialBalanceController.subjectBalanceList');
+INSERT INTO `action_log` VALUES (80, '查看试算平衡表数据', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:12:09', 'cn.ahyc.yjz.controller.SearchTrialBalanceController.subjectBalanceList');
+INSERT INTO `action_log` VALUES (81, '打开结账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:12:13', 'cn.ahyc.yjz.controller.CashierController.main');
+INSERT INTO `action_log` VALUES (82, '打开结账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:12:13', 'cn.ahyc.yjz.controller.CashierController.main');
+INSERT INTO `action_log` VALUES (83, '打开资产负债表页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:12:24', 'cn.ahyc.yjz.controller.BalanceSheetController.main');
+INSERT INTO `action_log` VALUES (84, '打开资产负债表页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:12:24', 'cn.ahyc.yjz.controller.BalanceSheetController.main');
+INSERT INTO `action_log` VALUES (85, '打开首页', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:06', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (86, '打开首页', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:06', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (87, '打开首页', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:15', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (88, '打开首页', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:15', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (89, '打开首页', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:16', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (90, '打开首页', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:16', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (91, '打开明细账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:26', 'cn.ahyc.yjz.controller.SearchDetailController.main');
+INSERT INTO `action_log` VALUES (92, '打开明细账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:26', 'cn.ahyc.yjz.controller.SearchDetailController.main');
+INSERT INTO `action_log` VALUES (93, '查看明细账数据', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:27', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (94, '查看明细账数据', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:27', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (95, '查看明细账数据', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:36', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (96, '查看明细账数据', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:36', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (97, '打开记账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:46', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (98, '打开记账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:46', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (99, '查看凭证明细列表', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:46', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (100, '查看凭证明细列表', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:46', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (101, '打开记账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:53', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (102, '打开记账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:53', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (103, '查看凭证明细列表', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:53', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (104, '查看凭证明细列表', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:13:53', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (105, '打开明细账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:16', 'cn.ahyc.yjz.controller.SearchDetailController.main');
+INSERT INTO `action_log` VALUES (106, '打开明细账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:16', 'cn.ahyc.yjz.controller.SearchDetailController.main');
+INSERT INTO `action_log` VALUES (107, '查看明细账数据', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:16', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (108, '查看明细账数据', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:16', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (109, '打开记账-科目余额页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:22', 'cn.ahyc.yjz.controller.VoucherController.subjectBalance');
+INSERT INTO `action_log` VALUES (110, '打开记账-科目余额页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:22', 'cn.ahyc.yjz.controller.VoucherController.subjectBalance');
+INSERT INTO `action_log` VALUES (111, '查看科目余额表', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:22', 'cn.ahyc.yjz.controller.SubjectBalanceController.subjectBalanceList');
+INSERT INTO `action_log` VALUES (112, '查看科目余额表', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:22', 'cn.ahyc.yjz.controller.SubjectBalanceController.subjectBalanceList');
+INSERT INTO `action_log` VALUES (113, '打开记账-科目余额页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:30', 'cn.ahyc.yjz.controller.VoucherController.subjectBalance');
+INSERT INTO `action_log` VALUES (114, '打开记账-科目余额页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:30', 'cn.ahyc.yjz.controller.VoucherController.subjectBalance');
+INSERT INTO `action_log` VALUES (115, '查看科目余额表', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:30', 'cn.ahyc.yjz.controller.SubjectBalanceController.subjectBalanceList');
+INSERT INTO `action_log` VALUES (116, '查看科目余额表', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:30', 'cn.ahyc.yjz.controller.SubjectBalanceController.subjectBalanceList');
+INSERT INTO `action_log` VALUES (117, '打开明细账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:35', 'cn.ahyc.yjz.controller.SearchDetailController.main');
+INSERT INTO `action_log` VALUES (118, '打开明细账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:35', 'cn.ahyc.yjz.controller.SearchDetailController.main');
+INSERT INTO `action_log` VALUES (119, '查看明细账数据', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:35', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (120, '查看明细账数据', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:35', 'cn.ahyc.yjz.controller.SearchDetailController.submitNow');
+INSERT INTO `action_log` VALUES (121, '打开记账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:39', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (122, '打开记账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:39', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (123, '查看凭证明细列表', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:39', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (124, '查看凭证明细列表', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:39', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (125, '打开明细账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:42', 'cn.ahyc.yjz.controller.SearchDetailController.main');
+INSERT INTO `action_log` VALUES (126, '打开明细账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:42', 'cn.ahyc.yjz.controller.SearchDetailController.main');
+INSERT INTO `action_log` VALUES (127, '查看科目余额表', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:43', 'cn.ahyc.yjz.controller.SubjectBalanceController.subjectBalanceList');
+INSERT INTO `action_log` VALUES (128, '查看科目余额表', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:43', 'cn.ahyc.yjz.controller.SubjectBalanceController.subjectBalanceList');
+INSERT INTO `action_log` VALUES (129, '打开凭证汇总表页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:43', 'cn.ahyc.yjz.controller.SearchVoucherCollectController.main');
+INSERT INTO `action_log` VALUES (130, '打开凭证汇总表页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:43', 'cn.ahyc.yjz.controller.SearchVoucherCollectController.main');
+INSERT INTO `action_log` VALUES (131, '查看凭证汇总表数据', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:43', 'cn.ahyc.yjz.controller.SearchVoucherCollectController.vouchercollectList');
+INSERT INTO `action_log` VALUES (132, '查看凭证汇总表数据', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:43', 'cn.ahyc.yjz.controller.SearchVoucherCollectController.vouchercollectList');
+INSERT INTO `action_log` VALUES (133, '打开试算平衡表页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:44', 'cn.ahyc.yjz.controller.SearchTrialBalanceController.main');
+INSERT INTO `action_log` VALUES (134, '打开试算平衡表页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:44', 'cn.ahyc.yjz.controller.SearchTrialBalanceController.main');
+INSERT INTO `action_log` VALUES (135, '查看试算平衡表数据', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:44', 'cn.ahyc.yjz.controller.SearchTrialBalanceController.subjectBalanceList');
+INSERT INTO `action_log` VALUES (136, '查看试算平衡表数据', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:44', 'cn.ahyc.yjz.controller.SearchTrialBalanceController.subjectBalanceList');
+INSERT INTO `action_log` VALUES (137, '打开结账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:45', 'cn.ahyc.yjz.controller.CashierController.main');
+INSERT INTO `action_log` VALUES (138, '打开结账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:45', 'cn.ahyc.yjz.controller.CashierController.main');
+INSERT INTO `action_log` VALUES (139, '打开资产负债表页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:47', 'cn.ahyc.yjz.controller.BalanceSheetController.main');
+INSERT INTO `action_log` VALUES (140, '打开资产负债表页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:16:47', 'cn.ahyc.yjz.controller.BalanceSheetController.main');
+INSERT INTO `action_log` VALUES (141, '打开记账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:17:06', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (142, '打开记账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:17:06', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (143, '查看凭证明细列表', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:17:06', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (144, '查看凭证明细列表', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:17:06', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (145, '打开初始化数据页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:17:32', 'cn.ahyc.yjz.controller.AccountSubjectController.initDataPage');
+INSERT INTO `action_log` VALUES (146, '打开初始化数据页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:17:32', 'cn.ahyc.yjz.controller.AccountSubjectController.initDataPage');
+INSERT INTO `action_log` VALUES (147, '汇总', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:17:36', 'cn.ahyc.yjz.controller.AccountSubjectController.calculate');
+INSERT INTO `action_log` VALUES (148, '汇总', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:17:36', 'cn.ahyc.yjz.controller.AccountSubjectController.calculate');
+INSERT INTO `action_log` VALUES (149, '汇总', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:17:37', 'cn.ahyc.yjz.controller.AccountSubjectController.calculate');
+INSERT INTO `action_log` VALUES (150, '汇总', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:17:37', 'cn.ahyc.yjz.controller.AccountSubjectController.calculate');
+INSERT INTO `action_log` VALUES (151, '打开会计科目管理页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:18:07', 'cn.ahyc.yjz.controller.AccountSubjectController.main');
+INSERT INTO `action_log` VALUES (152, '打开会计科目管理页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:18:07', 'cn.ahyc.yjz.controller.AccountSubjectController.main');
+INSERT INTO `action_log` VALUES (153, '查看科目说明', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:18:28', 'cn.ahyc.yjz.controller.AccountSubjectController.tip');
+INSERT INTO `action_log` VALUES (154, '查看科目说明', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:18:28', 'cn.ahyc.yjz.controller.AccountSubjectController.tip');
+INSERT INTO `action_log` VALUES (155, '打开会计科目管理页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:18:46', 'cn.ahyc.yjz.controller.AccountSubjectController.main');
+INSERT INTO `action_log` VALUES (156, '打开会计科目管理页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:18:46', 'cn.ahyc.yjz.controller.AccountSubjectController.main');
+INSERT INTO `action_log` VALUES (157, '打开会计科目管理页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:15', 'cn.ahyc.yjz.controller.AccountSubjectController.main');
+INSERT INTO `action_log` VALUES (158, '打开会计科目管理页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:15', 'cn.ahyc.yjz.controller.AccountSubjectController.main');
+INSERT INTO `action_log` VALUES (159, '打开初始化数据页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:19', 'cn.ahyc.yjz.controller.AccountSubjectController.initDataPage');
+INSERT INTO `action_log` VALUES (160, '打开初始化数据页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:19', 'cn.ahyc.yjz.controller.AccountSubjectController.initDataPage');
+INSERT INTO `action_log` VALUES (161, '试算平衡', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:22', 'cn.ahyc.yjz.controller.AccountSubjectController.balancePage');
+INSERT INTO `action_log` VALUES (162, '试算平衡', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:22', 'cn.ahyc.yjz.controller.AccountSubjectController.balancePage');
+INSERT INTO `action_log` VALUES (163, '汇总', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:31', 'cn.ahyc.yjz.controller.AccountSubjectController.calculate');
+INSERT INTO `action_log` VALUES (164, '汇总', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:31', 'cn.ahyc.yjz.controller.AccountSubjectController.calculate');
+INSERT INTO `action_log` VALUES (165, '汇总', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:33', 'cn.ahyc.yjz.controller.AccountSubjectController.calculate');
+INSERT INTO `action_log` VALUES (166, '汇总', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:33', 'cn.ahyc.yjz.controller.AccountSubjectController.calculate');
+INSERT INTO `action_log` VALUES (167, '打开初始化数据页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:49', 'cn.ahyc.yjz.controller.AccountSubjectController.initDataPage');
+INSERT INTO `action_log` VALUES (168, '打开初始化数据页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:49', 'cn.ahyc.yjz.controller.AccountSubjectController.initDataPage');
+INSERT INTO `action_log` VALUES (169, '打开会计科目管理页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:52', 'cn.ahyc.yjz.controller.AccountSubjectController.main');
+INSERT INTO `action_log` VALUES (170, '打开会计科目管理页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:52', 'cn.ahyc.yjz.controller.AccountSubjectController.main');
+INSERT INTO `action_log` VALUES (171, '打开记账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:56', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (172, '打开记账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:56', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (173, '查看凭证明细列表', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:56', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (174, '查看凭证明细列表', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:19:56', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (175, '打开模式凭证列表页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:20:20', 'cn.ahyc.yjz.controller.VoucherController.voucherTemplate');
+INSERT INTO `action_log` VALUES (176, '打开模式凭证列表页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:20:20', 'cn.ahyc.yjz.controller.VoucherController.voucherTemplate');
+INSERT INTO `action_log` VALUES (177, '打开记账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:21:51', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (178, '打开记账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:21:51', 'cn.ahyc.yjz.controller.VoucherController.voucher');
+INSERT INTO `action_log` VALUES (179, '查看凭证明细列表', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:21:51', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (180, '查看凭证明细列表', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:21:51', 'cn.ahyc.yjz.controller.VoucherController.voucherDetailList');
+INSERT INTO `action_log` VALUES (181, '打开首页', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:22:55', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (182, '打开首页', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:22:55', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (183, '打开首页', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:23:04', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (184, '打开首页', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:23:04', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (185, '打开结转损益页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:23:21', 'cn.ahyc.yjz.controller.CarryOverController.main');
+INSERT INTO `action_log` VALUES (186, '打开结转损益页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:23:21', 'cn.ahyc.yjz.controller.CarryOverController.main');
+INSERT INTO `action_log` VALUES (187, '结转损益', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:23:38', 'cn.ahyc.yjz.controller.CarryOverController.complete');
+INSERT INTO `action_log` VALUES (188, '结转损益', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:23:38', 'cn.ahyc.yjz.controller.CarryOverController.complete');
+INSERT INTO `action_log` VALUES (189, '打开结账页面', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:23:43', 'cn.ahyc.yjz.controller.CashierController.main');
+INSERT INTO `action_log` VALUES (190, '打开结账页面', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:23:43', 'cn.ahyc.yjz.controller.CashierController.main');
+INSERT INTO `action_log` VALUES (191, '结账', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:23:48', 'cn.ahyc.yjz.controller.CashierController.cashierSubmit');
+INSERT INTO `action_log` VALUES (192, '结账', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:23:48', 'cn.ahyc.yjz.controller.CashierController.cashierSubmit');
+INSERT INTO `action_log` VALUES (193, '切换账套', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:23:48', 'cn.ahyc.yjz.controller.AppController.switchAccoutBook');
+INSERT INTO `action_log` VALUES (194, '切换账套', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:23:48', 'cn.ahyc.yjz.controller.AppController.switchAccoutBook');
+INSERT INTO `action_log` VALUES (195, '打开首页', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:23:49', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (196, '打开首页', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:23:49', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (197, '打开首页', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:24:00', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (198, '打开首页', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:24:00', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (199, '打开首页', '开始', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:24:01', 'cn.ahyc.yjz.controller.AppController.dashboard');
+INSERT INTO `action_log` VALUES (200, '打开首页', '结束', '', 'admin', '0:0:0:0:0:0:0:1', NULL, NULL, '2024-07-11 23:24:01', 'cn.ahyc.yjz.controller.AppController.dashboard');
+
+-- ----------------------------
+-- Table structure for authorities
+-- ----------------------------
+DROP TABLE IF EXISTS `authorities`;
+CREATE TABLE `authorities`  (
+  `username` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
+  `authority` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL
+) ENGINE = InnoDB CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of authorities
+-- ----------------------------
+INSERT INTO `authorities` VALUES ('admin', 'ROLE_ADMIN');
+INSERT INTO `authorities` VALUES ('sanlli', 'ROLE_USER');
+
+-- ----------------------------
+-- Table structure for balance_sheet
+-- ----------------------------
+DROP TABLE IF EXISTS `balance_sheet`;
+CREATE TABLE `balance_sheet`  (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `code` bigint NULL DEFAULT NULL,
+  `parent_code` bigint NULL DEFAULT NULL,
+  `name` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
+  `year_begin_exp` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
+  `period_end_exp` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
+  `need_sum` int NULL DEFAULT NULL COMMENT '是否需要合计 0 需要 1 不需要',
+  `level` int NULL DEFAULT NULL,
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '资产负债' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of balance_sheet
+-- ----------------------------
+INSERT INTO `balance_sheet` VALUES (2, 1101, 11, '货币资金', '<1001:1012>.C@1', '<1001:1012>', 0, 2, '2015-10-28 14:11:01', '2015-10-29 11:47:32');
+INSERT INTO `balance_sheet` VALUES (3, 1102, 11, '交易性金融资产', '<1101>.C@1', '<1101>', 0, 2, '2015-10-28 14:11:07', '2015-10-28 14:37:22');
+INSERT INTO `balance_sheet` VALUES (4, 1103, 11, '应收票据', '<1121>.C@1', '<1121>', 0, 2, '2015-10-28 14:11:37', '2015-10-28 14:37:20');
+INSERT INTO `balance_sheet` VALUES (5, 1104, 11, '应收账款', '<1122>.C@1+<2203>.JC@1-<123101>.C@1', '<1122>+<2203>.JC-<123101>', 0, 2, '2015-10-28 14:11:55', '2015-10-29 12:00:08');
+INSERT INTO `balance_sheet` VALUES (6, 1105, 11, '预付款项', '<1123>.C@1+<2202>.JC@1', '<1123>+<2202>.JC', 0, 2, '2015-10-28 14:12:09', '2015-10-29 12:00:16');
+INSERT INTO `balance_sheet` VALUES (7, 1106, 11, '应收利息', '<1132>.C@1', '<1132>', 0, 2, '2015-10-28 14:12:17', '2015-10-28 14:37:19');
+INSERT INTO `balance_sheet` VALUES (8, 1107, 11, '应收股利', '<1131>.C@1', '<1131>', 0, 2, '2015-10-28 14:12:22', '2015-10-28 14:37:19');
+INSERT INTO `balance_sheet` VALUES (9, 1108, 11, '其他应收款', '<1221>.C@1-<123102>.C@1', '<1221>-<123102>', 0, 2, '2015-10-28 14:12:27', '2015-10-29 12:00:25');
+INSERT INTO `balance_sheet` VALUES (10, 1109, 11, '存货', '<1321:1406>.C@1-<1407>.C@1+<1408:1411>.C@1-<1471>.C@1', '<1321:1406>-<1407>+<1408:1411>-<1471>', 0, 2, '2015-10-28 14:12:32', '2015-10-29 12:00:37');
+INSERT INTO `balance_sheet` VALUES (11, 1110, 11, '一年内到期的非流动资产', '', '', 0, 2, '2015-10-28 14:12:40', '2015-10-29 10:53:06');
+INSERT INTO `balance_sheet` VALUES (12, 1111, 11, '其他流动资产', '', '', 0, 2, '2015-10-28 14:12:45', '2015-10-29 10:53:09');
+INSERT INTO `balance_sheet` VALUES (14, 1201, 12, '可供出售金融资产', '<1503>.C@1', '<1503>', 0, 2, '2015-10-28 14:12:58', '2015-10-28 14:37:18');
+INSERT INTO `balance_sheet` VALUES (15, 1202, 12, '持有至到期投资', '<1501>.C@1-<1502>.C@1', '<1501>-<1502>', 0, 2, '2015-10-28 14:13:03', '2015-10-29 12:00:45');
+INSERT INTO `balance_sheet` VALUES (16, 1203, 12, '长期应收款', '<1531>.C@1', '<1531>', 0, 2, '2015-10-28 14:13:08', '2015-10-28 14:37:18');
+INSERT INTO `balance_sheet` VALUES (17, 1204, 12, '长期股权投资', '<1511>.C@1-<1512>.C@1', '<1511>-<1512>', 0, 2, '2015-10-28 14:13:12', '2015-10-29 12:00:51');
+INSERT INTO `balance_sheet` VALUES (18, 1205, 12, '投资性房地产', '<1521>.C@1', '<1521>', 0, 2, '2015-10-28 14:13:17', '2015-10-28 14:37:25');
+INSERT INTO `balance_sheet` VALUES (19, 1206, 12, '固定资产', '<1601>.C@1-<1602>.C@1-<1603>.C@1', '<1601>-<1602>-<1603>', 0, 2, '2015-10-28 14:13:22', '2015-10-29 11:59:42');
+INSERT INTO `balance_sheet` VALUES (20, 1207, 12, '在建工程', '<1604>.C@1', '<1604>', 0, 2, '2015-10-28 14:13:26', '2015-10-28 14:37:17');
+INSERT INTO `balance_sheet` VALUES (21, 1208, 12, '工程物资', '<1605>.C@1', '<1605>', 0, 2, '2015-10-28 14:13:35', '2015-10-28 14:37:17');
+INSERT INTO `balance_sheet` VALUES (22, 1209, 12, '固定资产清理', '<1606>.C@1', '<1606>', 0, 2, '2015-10-28 14:13:41', '2015-10-28 14:37:17');
+INSERT INTO `balance_sheet` VALUES (23, 1210, 12, '生产性生物资产', '', '', 0, 2, '2015-10-28 14:13:45', '2015-10-29 10:53:11');
+INSERT INTO `balance_sheet` VALUES (24, 1211, 12, '油气资产', '', '', 0, 2, '2015-10-28 14:13:50', '2015-10-29 10:53:13');
+INSERT INTO `balance_sheet` VALUES (25, 1212, 12, '无形资产', '<1701>.C@1-<1702>.C@1-<1703>.C@1', '<1701>-<1702>-<1703>', 0, 2, '2015-10-28 14:14:09', '2015-10-29 11:58:26');
+INSERT INTO `balance_sheet` VALUES (26, 1213, 12, '开发支出', '', '', 0, 2, '2015-10-28 14:14:18', '2015-10-29 10:53:16');
+INSERT INTO `balance_sheet` VALUES (27, 1214, 12, '商誉', '<1711>.C@1', '<1711>', 0, 2, '2015-10-28 14:14:22', '2015-10-28 14:37:16');
+INSERT INTO `balance_sheet` VALUES (28, 1215, 12, '长期待摊费用', '<1801>.C@1', '<1801>', 0, 2, '2015-10-28 14:14:28', '2015-10-28 14:37:16');
+INSERT INTO `balance_sheet` VALUES (29, 1216, 12, '递延所得税资产', '<1811>.C@1', '<1811>', 0, 2, '2015-10-28 14:14:32', '2015-10-28 14:37:28');
+INSERT INTO `balance_sheet` VALUES (30, 1217, 12, '其他非流动资产', '<1532>.C@1+<1901>.C@1', '<1532>+<1901>', 0, 2, '2015-10-28 14:15:06', '2015-10-29 12:00:57');
+INSERT INTO `balance_sheet` VALUES (33, 2101, 21, '短期借款', '<2001>.C@1', '<2001>', 0, 2, '2015-10-28 14:15:57', '2015-10-28 14:37:15');
+INSERT INTO `balance_sheet` VALUES (34, 2102, 21, '交易性金融负债', '<2101>.C@1', '<2101> ', 0, 2, '2015-10-28 14:16:02', '2015-10-28 14:37:15');
+INSERT INTO `balance_sheet` VALUES (35, 2103, 21, '应付票据', '<2201>.C@1', '<2201>', 0, 2, '2015-10-28 14:16:06', '2015-10-28 14:37:15');
+INSERT INTO `balance_sheet` VALUES (36, 2104, 21, '应付账款', '<2202>.C@1+<1123>.DC@1', '<2202>+<1123>.DC', 0, 2, '2015-10-28 14:16:10', '2015-10-28 14:37:15');
+INSERT INTO `balance_sheet` VALUES (37, 2105, 21, '预收款项', '<2203>.C@1+<1122>.DC@1', '<2203>+<1122>.DC', 0, 2, '2015-10-28 14:16:14', '2015-10-28 14:37:15');
+INSERT INTO `balance_sheet` VALUES (38, 2106, 21, '应付职工薪酬', '<2211>.C@1', '<2211>', 0, 2, '2015-10-28 14:16:18', '2015-10-28 14:37:14');
+INSERT INTO `balance_sheet` VALUES (39, 2107, 21, '应交税费', '<2221>.C@1', '<2221>', 0, 2, '2015-10-28 14:16:22', '2015-10-28 14:37:14');
+INSERT INTO `balance_sheet` VALUES (40, 2108, 21, '应付利息', '<2232>.C@1', '<2232>', 0, 2, '2015-10-28 14:16:25', '2015-10-28 14:37:14');
+INSERT INTO `balance_sheet` VALUES (41, 2109, 21, '应付股利', '<2231>.C@1', '<2231>', 0, 2, '2015-10-28 14:16:30', '2015-10-28 14:37:14');
+INSERT INTO `balance_sheet` VALUES (42, 2110, 21, '其他应付款', '<2241>.C@1', '<2241>', 0, 2, '2015-10-28 14:16:34', '2015-10-28 14:37:14');
+INSERT INTO `balance_sheet` VALUES (43, 2111, 21, '一年内到期的非流动负债', '', '', 0, 2, '2015-10-28 14:16:40', '2015-10-29 10:53:20');
+INSERT INTO `balance_sheet` VALUES (44, 2112, 21, '其他流动负债', '<2314:2401>.C@1', '<2314:2401>', 0, 2, '2015-10-28 14:16:45', '2015-10-28 14:37:13');
+INSERT INTO `balance_sheet` VALUES (46, 2201, 22, '长期借款', '<2501>.C@1', '<2501>', 0, 2, '2015-10-28 14:16:50', '2015-10-28 14:37:13');
+INSERT INTO `balance_sheet` VALUES (47, 2202, 22, '应付债券', '<2502>.C@1', '<2502>', 0, 2, '2015-10-28 14:16:54', '2015-10-28 14:37:32');
+INSERT INTO `balance_sheet` VALUES (48, 2203, 22, '长期应付款', '<2701>.C@1', '<2701>', 0, 2, '2015-10-28 14:16:58', '2015-10-28 14:37:12');
+INSERT INTO `balance_sheet` VALUES (49, 2204, 22, '专项应付款', '<2711>.C@1', '<2711>', 0, 2, '2015-10-28 14:17:02', '2015-10-28 14:37:12');
+INSERT INTO `balance_sheet` VALUES (50, 2205, 22, '预计负债', '<2801>.C@1', '<2801>', 0, 2, '2015-10-28 14:17:06', '2015-10-28 14:37:11');
+INSERT INTO `balance_sheet` VALUES (51, 2206, 22, '递延所得税负债', '<2901>.C@1', '<2901>', 0, 2, '2015-10-28 14:17:11', '2015-10-28 14:37:11');
+INSERT INTO `balance_sheet` VALUES (52, 2207, 22, '其他非流动负债', '<2702>.C@1', '<2702>', 0, 2, '2015-10-28 14:17:14', '2015-10-28 14:37:11');
+INSERT INTO `balance_sheet` VALUES (54, 2301, 23, '实收资本（或股本）', '<4001>.C@1', '<4001>', 0, 2, '2015-10-28 14:17:40', '2015-10-28 14:37:10');
+INSERT INTO `balance_sheet` VALUES (55, 2302, 23, '资本公积', '<4002>.C@1', '<4002>', 0, 2, '2015-10-28 14:17:45', '2015-10-28 14:37:10');
+INSERT INTO `balance_sheet` VALUES (56, 2303, 23, '减：库存股', '<4201>.C@1', '<4201>', 1, 2, '2015-10-28 14:17:49', '2015-10-28 14:37:09');
+INSERT INTO `balance_sheet` VALUES (57, 2304, 23, '盈余公积', '<4101>.C@1', '<4101>', 0, 2, '2015-10-28 14:17:53', '2015-10-28 14:37:09');
+INSERT INTO `balance_sheet` VALUES (58, 2305, 23, '未分配利润', '<4103>.C@1+<4104>.C@1', '<4103>+<4104>', 0, 2, '2015-10-28 14:17:59', '2015-10-28 14:37:08');
+INSERT INTO `balance_sheet` VALUES (59, 1, -9999, '资产', '', '', 0, 0, '2015-10-28 14:19:04', '2015-10-28 16:41:53');
+INSERT INTO `balance_sheet` VALUES (60, 2, -9999, '负债和所有者权益(或股东权益)', '', '', 0, 0, '2015-10-28 14:19:37', '2015-10-28 14:36:59');
+INSERT INTO `balance_sheet` VALUES (61, 11, 1, '流动资产', '', '', 0, 1, '2015-10-28 14:20:34', '2015-10-28 14:37:01');
+INSERT INTO `balance_sheet` VALUES (62, 12, 1, '非流动资产', '', '', 0, 1, '2015-10-28 14:20:49', '2015-10-28 14:37:01');
+INSERT INTO `balance_sheet` VALUES (63, 21, 2, '流动负债', '', '', 0, 1, '2015-10-28 14:21:43', '2015-10-28 14:37:02');
+INSERT INTO `balance_sheet` VALUES (64, 22, 2, '非流动负债', '', '', 0, 1, '2015-10-28 14:21:48', '2015-10-28 14:37:02');
+INSERT INTO `balance_sheet` VALUES (65, 23, 2, '所有者权益（或股东权益）', '', '', 0, 1, '2015-10-28 14:22:36', '2015-10-28 14:37:03');
+INSERT INTO `balance_sheet` VALUES (66, NULL, NULL, NULL, '', '', 0, NULL, '2015-10-28 14:37:36', '2015-01-01 00:00:00');
+
+-- ----------------------------
+-- Table structure for cash_flow
+-- ----------------------------
+DROP TABLE IF EXISTS `cash_flow`;
+CREATE TABLE `cash_flow`  (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `cash_code` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '代码',
+  `name` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '项目',
+  `static_code` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
+  `calcu_type` int UNSIGNED NULL DEFAULT NULL COMMENT '0 加 1 减',
+  `from_flag` int UNSIGNED NULL DEFAULT NULL COMMENT '0 填入 1计算',
+  `money` decimal(11, 2) NULL DEFAULT NULL COMMENT '金额',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '现金流量基本数据表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of cash_flow
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for cash_flow_data
+-- ----------------------------
+DROP TABLE IF EXISTS `cash_flow_data`;
+CREATE TABLE `cash_flow_data`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `cash_code` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '代码',
+  `subject_code` bigint NULL DEFAULT NULL COMMENT '科目代码',
+  `relative_subject_code` bigint NULL DEFAULT NULL COMMENT '对方科目代码',
+  `money` decimal(11, 2) NULL DEFAULT NULL COMMENT '金额',
+  `book_id` bigint NULL DEFAULT NULL COMMENT '账套id',
+  `period_id` bigint NULL DEFAULT NULL COMMENT '期间id',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00',
+  `voucher_id` bigint NULL DEFAULT NULL COMMENT '记账凭证id',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '现金流量数据表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of cash_flow_data
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for company_common_type
+-- ----------------------------
+DROP TABLE IF EXISTS `company_common_type`;
+CREATE TABLE `company_common_type`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `type_code` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '企业通用配置表code',
+  `type_name` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '字典类型名称',
+  `company_id` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '企业id',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '修改时间',
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00' COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '企业通用配置表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of company_common_type
+-- ----------------------------
+INSERT INTO `company_common_type` VALUES (1, '1', '凭证字', NULL, '2015-09-26 22:07:11', '2015-01-01 00:00:00');
+INSERT INTO `company_common_type` VALUES (2, '2', '模式类别', NULL, '2015-10-23 10:46:36', '2015-01-01 00:00:00');
+
+-- ----------------------------
+-- Table structure for company_common_value
+-- ----------------------------
+DROP TABLE IF EXISTS `company_common_value`;
+CREATE TABLE `company_common_value`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `type_id` bigint NULL DEFAULT NULL COMMENT '字典类型code，字典数据表外键',
+  `value` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '简称',
+  `show_value` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '显示名字',
+  `company_id` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '企业id',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00' COMMENT '修改时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `fk_company_common_value_company_common_type1_idx`(`type_id` ASC) USING BTREE,
+  CONSTRAINT `fk_company_common_value_company_common_type1` FOREIGN KEY (`type_id`) REFERENCES `company_common_type` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '企业通用配置值' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of company_common_value
+-- ----------------------------
+INSERT INTO `company_common_value` VALUES (1, 1, '记', '记', NULL, '2015-09-26 22:07:27', '2015-01-01 00:00:00');
+INSERT INTO `company_common_value` VALUES (2, 1, '录', '录', NULL, '2015-09-26 22:07:37', '2015-01-01 00:00:00');
+INSERT INTO `company_common_value` VALUES (3, 2, '汇款', '汇款', NULL, '2024-07-11 23:15:42', '2015-01-01 00:00:00');
+
+-- ----------------------------
+-- Table structure for dict_type
+-- ----------------------------
+DROP TABLE IF EXISTS `dict_type`;
+CREATE TABLE `dict_type`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `type_code` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '字典类型code，字典数据表外键',
+  `type_name` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '字典类型名称',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '修改时间',
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00' COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '字典类型表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of dict_type
+-- ----------------------------
+INSERT INTO `dict_type` VALUES (1, 'kjkmtx', '会计科目体系', '2015-09-23 09:55:27', '2015-01-01 00:00:00');
+
+-- ----------------------------
+-- Table structure for dict_value
+-- ----------------------------
+DROP TABLE IF EXISTS `dict_value`;
+CREATE TABLE `dict_value`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `dict_type_id` bigint NULL DEFAULT NULL COMMENT '字典类型code，字典数据表外键',
+  `value` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '简称',
+  `show_value` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '显示名字',
+  `is_fixed` int NULL DEFAULT NULL COMMENT '是否固定，固定则不可修改  值：1\n不固定：0',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00' COMMENT '修改时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE,
+  INDEX `fk_dict_value_dict_type1_idx`(`dict_type_id` ASC) USING BTREE,
+  CONSTRAINT `fk_dict_value_dict_type1` FOREIGN KEY (`dict_type_id`) REFERENCES `dict_type` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '字典数据表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of dict_value
+-- ----------------------------
+INSERT INTO `dict_value` VALUES (1, 1, '`2015新会计准则`', '2015新会计准则', 1, '2015-09-23 09:58:41', '2015-01-01 00:00:00');
+
+-- ----------------------------
+-- Table structure for login_history
+-- ----------------------------
+DROP TABLE IF EXISTS `login_history`;
+CREATE TABLE `login_history`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `username` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '用户名',
+  `login_ip` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '登录IP',
+  `login_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '登录时间',
+  `login_times` bigint NULL DEFAULT NULL COMMENT '登录次数',
+  `account_book_id` bigint NULL DEFAULT NULL COMMENT '当前登录所操作的账套ID',
+  `login_result` tinyint(1) NULL DEFAULT NULL COMMENT '登录是否成功 \n1：成功\n0：失败',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE,
+  INDEX `idx_login_time`(`login_time` DESC) USING BTREE,
+  INDEX `idx_login_result`(`login_result` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of login_history
+-- ----------------------------
+INSERT INTO `login_history` VALUES (1, 'admin', '127.0.0.1', '2024-07-11 23:05:59', NULL, 1, 1);
+INSERT INTO `login_history` VALUES (2, 'admin', '127.0.0.1', '2024-07-11 23:13:06', NULL, 1, 1);
+INSERT INTO `login_history` VALUES (3, 'admin', '127.0.0.1', '2024-07-11 23:22:55', NULL, 1, 1);
+
+-- ----------------------------
+-- Table structure for period
+-- ----------------------------
+DROP TABLE IF EXISTS `period`;
+CREATE TABLE `period`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `start_time` timestamp NULL DEFAULT NULL COMMENT '本期开始时间',
+  `end_time` timestamp NULL DEFAULT NULL COMMENT '本期结束时间',
+  `current_period` int NULL DEFAULT NULL COMMENT '本期数值',
+  `flag` int NULL DEFAULT NULL COMMENT '是否当前期    1 表示当前期   0   表示不是当前期',
+  `book_id` bigint NULL DEFAULT NULL COMMENT '账套id',
+  `company_id` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '公司id',
+  `end_flag` int NULL DEFAULT NULL COMMENT '表示此账套对应的期间是否可以修改\n1  为结束    \n0  未结束',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE,
+  INDEX `fk_period_account_book_idx`(`book_id` ASC) USING BTREE,
+  CONSTRAINT `fk_period_account_book` FOREIGN KEY (`book_id`) REFERENCES `account_book` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '期表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of period
+-- ----------------------------
+INSERT INTO `period` VALUES (1, '2015-10-01 00:00:00', '2024-07-11 23:23:48', 10, 0, 1, NULL, 1, '2015-10-22 15:54:56', '2024-07-11 23:23:48');
+INSERT INTO `period` VALUES (2, '2015-11-01 00:00:00', NULL, 11, 1, 1, NULL, 0, '2024-07-11 23:23:48', '2015-01-01 00:00:00');
+
+-- ----------------------------
+-- Table structure for profit_period
+-- ----------------------------
+DROP TABLE IF EXISTS `profit_period`;
+CREATE TABLE `profit_period`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `name` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '项目',
+  `fix` int NULL DEFAULT NULL COMMENT '是否可修改：1:固定',
+  `month_exp` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '本期金额公式',
+  `month_money` decimal(11, 2) NULL DEFAULT NULL COMMENT '本月金额',
+  `last_month_exp` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '上期金额公式',
+  `last_month_money` decimal(11, 2) NULL DEFAULT NULL COMMENT '上期金额',
+  `book_id` bigint NULL DEFAULT NULL COMMENT '账套id',
+  `current_period` int NULL DEFAULT NULL COMMENT '当前期数',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '利润表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of profit_period
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for profit_template
+-- ----------------------------
+DROP TABLE IF EXISTS `profit_template`;
+CREATE TABLE `profit_template`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `name` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '项目',
+  `month_exp` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '本月金额',
+  `last_month_exp` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '上年金额',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '利润模板表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of profit_template
+-- ----------------------------
+INSERT INTO `profit_template` VALUES (1, '项目', '本期金额', '上期金额', '0000-00-00 00:00:00', '2015-11-02 10:25:30');
+INSERT INTO `profit_template` VALUES (2, '一、营业收入', '=<6001>.SY+<6051>.SY', '=<6001>.SY@-1+<6051>.SY@-1', '0000-00-00 00:00:00', '2015-11-02 10:25:30');
+INSERT INTO `profit_template` VALUES (3, '减：营业成本', '=<6401>.SY+<6402>.SY', '=<6401>.SY@-1+<6402>.SY@-1', '0000-00-00 00:00:00', '2015-11-02 10:25:30');
+INSERT INTO `profit_template` VALUES (4, '　　营业税金及附加', '=<6403>.SY', '=<6403>.SY@-1', '0000-00-00 00:00:00', '2015-11-02 10:25:30');
+INSERT INTO `profit_template` VALUES (5, '　　销售费用', '=<6601>.SY', '=<6601>.SY@-1', '0000-00-00 00:00:00', '2015-11-02 10:25:30');
+INSERT INTO `profit_template` VALUES (6, '　　管理费用', '=<6602>.SY', '=<6602>.SY@-1', '0000-00-00 00:00:00', '2015-11-02 10:25:30');
+INSERT INTO `profit_template` VALUES (7, '　　财务费用', '=<6603>.SY', '=<6603>.SY@-1', '0000-00-00 00:00:00', '2015-11-02 10:25:30');
+INSERT INTO `profit_template` VALUES (8, '　　资产减值损失', '=<6701>.SY', '=<6701>.SY@-1', '0000-00-00 00:00:00', '2015-11-02 10:25:30');
+INSERT INTO `profit_template` VALUES (9, '加：公允价值变动收益（损失以“-”号填列）', '=<6101>.SY', '=<6101>.SY@-1', '0000-00-00 00:00:00', '2015-11-02 10:25:30');
+INSERT INTO `profit_template` VALUES (10, '　　投资收益（损失以“-”号填列）', '=<6111>.SY', '=<6111>.SY@-1', '0000-00-00 00:00:00', '2015-11-02 10:25:30');
+INSERT INTO `profit_template` VALUES (11, '二、营业利润（损失以“-”号填列）', '=B2-B3-B4-B5-B6-B7-B8+B9+B10', '=C2-C3-C4-C5-C6-C7-C8+C9+C10', '0000-00-00 00:00:00', '2015-11-02 10:25:30');
+INSERT INTO `profit_template` VALUES (12, '加：营业外收入', '=<6301>.SY', '=<6301>.SY@-1', '0000-00-00 00:00:00', '2015-11-02 10:25:30');
+INSERT INTO `profit_template` VALUES (13, '减：营业外支出', '=<6711>.SY', '=<6711>.SY@-1', '0000-00-00 00:00:00', '2015-11-02 10:25:30');
+INSERT INTO `profit_template` VALUES (14, '三、利润总额（损失以“-”号填列）', '=B11+B12-B13', '=C11+C12-C13', '0000-00-00 00:00:00', '2015-11-02 10:25:30');
+INSERT INTO `profit_template` VALUES (15, '减：所得税费用', '=<6801>.SY', '=<6801>.SY@-1', '0000-00-00 00:00:00', '2015-11-02 10:25:30');
+INSERT INTO `profit_template` VALUES (16, '四、净利润', '=B14-B15', '=C14-C15', '0000-00-00 00:00:00', '2015-11-02 10:25:30');
+
+-- ----------------------------
+-- Table structure for subject_balance
+-- ----------------------------
+DROP TABLE IF EXISTS `subject_balance`;
+CREATE TABLE `subject_balance`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `subject_code` bigint NOT NULL COMMENT '科目代码',
+  `initial_debit_balance` decimal(11, 2) NULL DEFAULT NULL COMMENT '期初借方金额',
+  `initial_credit_balance` decimal(11, 2) NULL DEFAULT NULL COMMENT '期初贷方金额',
+  `period_debit_occur` decimal(11, 2) NULL DEFAULT NULL COMMENT '本期借方发生额',
+  `period_credit_occur` decimal(11, 2) NULL DEFAULT NULL COMMENT '本期贷方发生额',
+  `year_debit_occur` decimal(11, 2) NULL DEFAULT NULL COMMENT '本年借方累计发生额',
+  `year_credit_occur` decimal(11, 2) NULL DEFAULT NULL COMMENT '本年贷方累计发生额',
+  `terminal_debit_balance` decimal(11, 2) NULL DEFAULT NULL COMMENT '期末借方余额',
+  `terminal_credit_balance` decimal(11, 2) NULL DEFAULT NULL COMMENT '期末贷方余额',
+  `book_id` bigint NOT NULL COMMENT '账套id',
+  `period_id` bigint NOT NULL,
+  `profit_loss_occur_amount` decimal(11, 2) NULL DEFAULT NULL COMMENT '损益类科目实际发生额',
+  `profit_loss_total_occur_amount` decimal(11, 2) NULL DEFAULT NULL COMMENT '损益类科目本年累计发生额',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE,
+  UNIQUE INDEX `subject_code_UNIQUE`(`subject_code` ASC, `period_id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '科目余额表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of subject_balance
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for subject_length
+-- ----------------------------
+DROP TABLE IF EXISTS `subject_length`;
+CREATE TABLE `subject_length`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT ' 主键',
+  `length` int NULL DEFAULT NULL,
+  `level` int NULL DEFAULT NULL COMMENT '层级',
+  `book_id` bigint NULL DEFAULT NULL COMMENT '账套id',
+  `company_id` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '企业id',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE,
+  INDEX `fk_subject_length_account_book1_idx`(`book_id` ASC) USING BTREE,
+  CONSTRAINT `fk_subject_length_account_book1` FOREIGN KEY (`book_id`) REFERENCES `account_book` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '定义会计科目长度表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of subject_length
+-- ----------------------------
+INSERT INTO `subject_length` VALUES (1, 4, 1, 1, NULL, '2015-10-22 15:54:56', '2015-01-01 00:00:00');
+INSERT INTO `subject_length` VALUES (2, 2, 2, 1, NULL, '2015-10-22 15:54:56', '2015-01-01 00:00:00');
+INSERT INTO `subject_length` VALUES (3, 2, 3, 1, NULL, '2015-10-22 15:54:56', '2015-01-01 00:00:00');
+INSERT INTO `subject_length` VALUES (4, 2, 4, 1, NULL, '2015-10-22 15:54:56', '2015-01-01 00:00:00');
+INSERT INTO `subject_length` VALUES (5, 2, 5, 1, NULL, '2015-10-22 15:54:56', '2015-01-01 00:00:00');
+
+-- ----------------------------
+-- Table structure for users
+-- ----------------------------
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users`  (
+  `username` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
+  `password` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
+  `enabled` tinyint(1) NULL DEFAULT NULL
+) ENGINE = InnoDB CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of users
+-- ----------------------------
+INSERT INTO `users` VALUES ('admin', 'fb49ae1f4ff525971dce997fe84aa3ac4db3d9fd308f11f6153d4d7d9d9ab53c895ef246839cff0a', 1);
+
+-- ----------------------------
+-- Table structure for voucher
+-- ----------------------------
+DROP TABLE IF EXISTS `voucher`;
+CREATE TABLE `voucher`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `voucher_word` varchar(25) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '凭证字',
+  `voucher_no` int NULL DEFAULT NULL COMMENT '凭证号  必须唯一',
+  `voucher_time` timestamp NULL DEFAULT NULL COMMENT '日期',
+  `bill_num` int NULL DEFAULT NULL COMMENT '附单据',
+  `audit_user` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '审核人',
+  `posting_user` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '过账人',
+  `touching_user` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '制单人',
+  `carry_over` int NULL DEFAULT NULL COMMENT '1:是结账凭证',
+  `period_id` bigint NULL DEFAULT NULL COMMENT '期间id',
+  `company_id` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00' COMMENT '修改时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE,
+  UNIQUE INDEX `accounting_no_UNIQUE`(`voucher_no` ASC, `period_id` ASC) USING BTREE,
+  INDEX `fk_voucher_period1_idx`(`period_id` ASC) USING BTREE,
+  CONSTRAINT `fk_voucher_period1` FOREIGN KEY (`period_id`) REFERENCES `period` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '记账凭证主表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of voucher
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for voucher_detail
+-- ----------------------------
+DROP TABLE IF EXISTS `voucher_detail`;
+CREATE TABLE `voucher_detail`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `subject_code` bigint NULL DEFAULT NULL COMMENT '会计科目代码',
+  `debit` decimal(11, 2) NULL DEFAULT NULL COMMENT ' 借方金额',
+  `credit` decimal(11, 2) NULL DEFAULT NULL COMMENT '贷方金额',
+  `summary` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '摘要',
+  `voucher_id` bigint NULL DEFAULT NULL COMMENT '记账主表id',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00' COMMENT '修改时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE,
+  INDEX `fk_voucher_detail_voucher1_idx`(`voucher_id` ASC) USING BTREE,
+  CONSTRAINT `fk_voucher_detail_voucher1` FOREIGN KEY (`voucher_id`) REFERENCES `voucher` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '记账详细表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of voucher_detail
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for voucher_template
+-- ----------------------------
+DROP TABLE IF EXISTS `voucher_template`;
+CREATE TABLE `voucher_template`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `voucher_word` varchar(25) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '凭证字',
+  `bill_num` int NULL DEFAULT NULL COMMENT '附单据',
+  `audit_user` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '审核人',
+  `posting_user` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '过账人',
+  `touching_user` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '制单人',
+  `type_name` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '模板类别名称',
+  `name` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '模板名称',
+  `company_id` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '企业id',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00' COMMENT '修改时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '记账凭证模板主表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of voucher_template
+-- ----------------------------
+INSERT INTO `voucher_template` VALUES (1, '记', 0, NULL, NULL, NULL, '汇款', '5550', NULL, '2024-07-11 23:16:05', '2024-07-11 23:21:45');
+INSERT INTO `voucher_template` VALUES (2, '记', 1, NULL, NULL, NULL, '汇款', '5', NULL, '2024-07-11 23:20:40', '2015-01-01 00:00:00');
+
+-- ----------------------------
+-- Table structure for voucher_template_detail
+-- ----------------------------
+DROP TABLE IF EXISTS `voucher_template_detail`;
+CREATE TABLE `voucher_template_detail`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `summary` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '摘要',
+  `subject_code` bigint NULL DEFAULT NULL COMMENT '会计科目代码',
+  `debit` decimal(11, 2) NULL DEFAULT NULL COMMENT ' 借方金额',
+  `credit` decimal(11, 2) NULL DEFAULT NULL COMMENT '贷方金额',
+  `template_id` bigint NULL DEFAULT NULL COMMENT '记账主表id',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modify_time` timestamp NOT NULL DEFAULT '2015-01-01 00:00:00',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `id_UNIQUE`(`id` ASC) USING BTREE,
+  INDEX `fk_voucher_template_detail_voucher_template1_idx`(`template_id` ASC) USING BTREE,
+  CONSTRAINT `fk_voucher_template_detail_voucher_template1` FOREIGN KEY (`template_id`) REFERENCES `voucher_template` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '记账模板详细表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of voucher_template_detail
+-- ----------------------------
+INSERT INTO `voucher_template_detail` VALUES (3, '5550', 101203, 100.00, NULL, 1, '2024-07-11 23:21:45', '2015-01-01 00:00:00');
+INSERT INTO `voucher_template_detail` VALUES (4, '6000', 101202, NULL, 60000.00, 1, '2024-07-11 23:21:45', '2015-01-01 00:00:00');
+
+-- ----------------------------
+-- Procedure structure for collectSubjectBalance
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `collectSubjectBalance`;
+delimiter ;;
+CREATE PROCEDURE `collectSubjectBalance`(IN periodId BIGINT)
+BEGIN
+
+DECLARE i INT;
+
+SELECT
+	max(t2.`level`) INTO i
+FROM
+	subject_balance t
+LEFT JOIN account_subject t2 ON t.book_id = t2.book_id
+AND t.subject_code = t2.subject_code;
+
+
+WHILE i > 1 DO
+	INSERT INTO subject_balance (
+		subject_code,
+		book_id,
+		period_id,
+		terminal_debit_balance,
+		terminal_credit_balance,
+		period_debit_occur,
+		period_credit_occur,
+		year_debit_occur,
+		year_credit_occur,
+		initial_debit_balance,
+		initial_credit_balance,
+		profit_loss_occur_amount,
+		profit_loss_total_occur_amount
+	) SELECT
+		sb.parent_subject_code,
+		sb.book_id,
+		sb.period_id,
+		sb.terminal_debit_balance,
+		sb.terminal_credit_balance,
+		sb.period_debit_occur,
+		sb.period_credit_occur,
+		sb.year_debit_occur,
+		sb.year_credit_occur,
+		sb.initial_debit_balance,
+		sb.initial_credit_balance,
+		sb.profit_loss_occur_amount,
+		sb.profit_loss_total_occur_amount
+	FROM
+		(
+			SELECT
+				t2.parent_subject_code,
+				t.book_id,
+				t.period_id,
+				NULLIF(IF(t3.direction=1,IFNULL(sum(t.terminal_debit_balance),0)-IFNULL(sum(t.terminal_credit_balance),0),null),0) AS terminal_debit_balance,
+				NULLIF(IF(t3.direction=2,IFNULL(sum(t.terminal_credit_balance),0)-IFNULL(sum(t.terminal_debit_balance),0),null),0) AS terminal_credit_balance,
+				sum(t.period_debit_occur) AS period_debit_occur,
+				sum(t.period_credit_occur) AS period_credit_occur,
+				sum(t.year_debit_occur) AS year_debit_occur,
+				sum(t.year_credit_occur) AS year_credit_occur,
+				NULLIF(IF(t3.direction=1,IFNULL(sum(t.initial_debit_balance),0)-IFNULL(sum(t.initial_credit_balance),0),null),0) AS initial_debit_balance,
+				NULLIF(IF(t3.direction=2,IFNULL(sum(t.initial_credit_balance),0)-IFNULL(sum(t.initial_debit_balance),0),null),0) AS initial_credit_balance,
+				sum(t.profit_loss_occur_amount) AS profit_loss_occur_amount,
+				sum(t.profit_loss_total_occur_amount) AS profit_loss_total_occur_amount
+			FROM
+				subject_balance t
+			LEFT JOIN account_subject t2 ON t.book_id = t2.book_id
+			AND t.subject_code = t2.subject_code
+			left join account_subject t3 ON t3.book_id = t2.book_id
+			AND t3.subject_code = t2.parent_subject_code
+			WHERE
+				t2.`level` = i
+			AND t.period_id = periodId
+			GROUP BY
+				t2.`level`,
+				t2.parent_subject_code,
+				t.period_id
+		) sb ON DUPLICATE KEY UPDATE period_debit_occur = sb.period_debit_occur,
+		period_credit_occur = sb.period_credit_occur,
+		year_debit_occur = sb.year_debit_occur,
+		year_credit_occur = sb.year_credit_occur,
+		terminal_debit_balance = sb.terminal_debit_balance,
+		terminal_credit_balance = sb.terminal_credit_balance,
+		initial_debit_balance = sb.initial_debit_balance,
+		initial_credit_balance = sb.initial_credit_balance,
+		profit_loss_occur_amount = sb.profit_loss_occur_amount,
+		profit_loss_total_occur_amount = sb.profit_loss_total_occur_amount;
+
+
+SET i = i - 1;
+
+
+END
+WHILE;
+
+
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table account_book
+-- ----------------------------
+DROP TRIGGER IF EXISTS `account_book_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `account_book_BEFORE_UPDATE` BEFORE UPDATE ON `account_book` FOR EACH ROW BEGIN
+	SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table account_subject
+-- ----------------------------
+DROP TRIGGER IF EXISTS `account_subject_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `account_subject_BEFORE_UPDATE` BEFORE UPDATE ON `account_subject` FOR EACH ROW BEGIN
+	SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table account_subject_template
+-- ----------------------------
+DROP TRIGGER IF EXISTS `account_subject_template_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `account_subject_template_BEFORE_UPDATE` BEFORE UPDATE ON `account_subject_template` FOR EACH ROW BEGIN
+	SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table balance_sheet
+-- ----------------------------
+DROP TRIGGER IF EXISTS `balance_sheet_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `balance_sheet_BEFORE_UPDATE` BEFORE UPDATE ON `balance_sheet` FOR EACH ROW BEGIN
+	SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table cash_flow
+-- ----------------------------
+DROP TRIGGER IF EXISTS `cash_flow_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `cash_flow_BEFORE_UPDATE` BEFORE UPDATE ON `cash_flow` FOR EACH ROW BEGIN
+   SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table cash_flow_data
+-- ----------------------------
+DROP TRIGGER IF EXISTS `cash_flow_data_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `cash_flow_data_BEFORE_UPDATE` BEFORE UPDATE ON `cash_flow_data` FOR EACH ROW BEGIN
+	SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table company_common_type
+-- ----------------------------
+DROP TRIGGER IF EXISTS `company_common_type_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `company_common_type_BEFORE_UPDATE` BEFORE UPDATE ON `company_common_type` FOR EACH ROW BEGIN
+	SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table company_common_value
+-- ----------------------------
+DROP TRIGGER IF EXISTS `company_common_value_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `company_common_value_BEFORE_UPDATE` BEFORE UPDATE ON `company_common_value` FOR EACH ROW BEGIN
+	SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table dict_type
+-- ----------------------------
+DROP TRIGGER IF EXISTS `dict_type_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `dict_type_BEFORE_UPDATE` BEFORE UPDATE ON `dict_type` FOR EACH ROW BEGIN
+	SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table dict_value
+-- ----------------------------
+DROP TRIGGER IF EXISTS `dict_value_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `dict_value_BEFORE_UPDATE` BEFORE UPDATE ON `dict_value` FOR EACH ROW BEGIN
+	SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table period
+-- ----------------------------
+DROP TRIGGER IF EXISTS `period_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `period_BEFORE_UPDATE` BEFORE UPDATE ON `period` FOR EACH ROW BEGIN
+	SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table profit_period
+-- ----------------------------
+DROP TRIGGER IF EXISTS `profit_period_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `profit_period_BEFORE_UPDATE` BEFORE UPDATE ON `profit_period` FOR EACH ROW BEGIN
+   SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table profit_template
+-- ----------------------------
+DROP TRIGGER IF EXISTS `profit_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `profit_BEFORE_UPDATE` BEFORE UPDATE ON `profit_template` FOR EACH ROW BEGIN
+	SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table subject_balance
+-- ----------------------------
+DROP TRIGGER IF EXISTS `subject_balance_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `subject_balance_BEFORE_UPDATE` BEFORE UPDATE ON `subject_balance` FOR EACH ROW BEGIN
+	SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table subject_length
+-- ----------------------------
+DROP TRIGGER IF EXISTS `subject_length_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `subject_length_BEFORE_UPDATE` BEFORE UPDATE ON `subject_length` FOR EACH ROW BEGIN
+	SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table voucher
+-- ----------------------------
+DROP TRIGGER IF EXISTS `voucher_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `voucher_BEFORE_UPDATE` BEFORE UPDATE ON `voucher` FOR EACH ROW BEGIN
+	SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table voucher_detail
+-- ----------------------------
+DROP TRIGGER IF EXISTS `voucher_detail_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `voucher_detail_BEFORE_UPDATE` BEFORE UPDATE ON `voucher_detail` FOR EACH ROW BEGIN
+	SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table voucher_template
+-- ----------------------------
+DROP TRIGGER IF EXISTS `voucher_template_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `voucher_template_BEFORE_UPDATE` BEFORE UPDATE ON `voucher_template` FOR EACH ROW BEGIN
+	SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table voucher_template_detail
+-- ----------------------------
+DROP TRIGGER IF EXISTS `voucher_template_detail_BEFORE_UPDATE`;
+delimiter ;;
+CREATE TRIGGER `voucher_template_detail_BEFORE_UPDATE` BEFORE UPDATE ON `voucher_template_detail` FOR EACH ROW BEGIN
+	SET NEW.`modify_time` = NOW();
+END
+;;
+delimiter ;
+
+SET FOREIGN_KEY_CHECKS = 1;

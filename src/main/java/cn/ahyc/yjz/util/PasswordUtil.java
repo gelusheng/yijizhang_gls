@@ -42,14 +42,14 @@ public class PasswordUtil {
             return  plainText;
       }
 
-//      public static void main(String[] args) {
-////            String encryptedText =  PasswordUtil.encrypt("1120");
-////            System.out.println(encryptedText);
-////            String plainText = PasswordUtil.decrypt(encryptedText);
-////            System.out.println(plainText);
-//
-//            PasswordEncoder passwordEncoder = new StandardPasswordEncoder();
-//            System.out.println(passwordEncoder.encode("admin"));
-//      }
+      public static void main(String[] args) {
+            String encryptedText =  PasswordUtil.encrypt("admin");
+            System.out.println(encryptedText);
+            String plainText = PasswordUtil.decrypt(encryptedText);
+            System.out.println(plainText);
+
+            PasswordEncoder passwordEncoder = new StandardPasswordEncoder();
+            System.out.println(passwordEncoder.encode("admin"));
+      }
 
 }
